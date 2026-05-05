@@ -7,6 +7,6 @@ import lombok.ToString;
 @ToString
 public class OrderCreateRequest {
     private Long productId;
-    private Long orderQty;
-    private Long orderUnitPrice;
+    private Long orderDetailQty;
+    private Long orderDetailPrice;
 }

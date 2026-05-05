@@ -5,59 +5,69 @@ import com.msa.order.infra.kafka.event.EventType;
 import com.msa.order.infra.kafka.event.payload.OrderCreatedEventPayload;
 import com.msa.order.infra.kafka.event.eventpublisher.KafkaEventPublisher;
 import com.msa.order.model.entity.Order;
+import com.msa.order.model.entity.OrderDetail;
 import com.msa.order.model.request.OrderCreateRequest;
-import com.msa.order.model.response.OrderResponse;
+import com.msa.order.model.response.OrderListResponse;
+import com.msa.order.model.response.OrderCreateResponse;
+import com.msa.order.repository.OrderDetailRepository;
 import com.msa.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
     private final KafkaEventPublisher kafkaEventPublisher;
 
     @Transactional
-    public OrderResponse create(Long userId, OrderCreateRequest orderCreateRequest) {
+    public OrderCreateResponse create(Long userId, OrderCreateRequest orderCreateRequest) {
+
         Order order = Order.create(
-                userId,
-                orderCreateRequest.getProductId(),
-                orderCreateRequest.getOrderQty(),
-                orderCreateRequest.getOrderUnitPrice()
+                userId
         );
 
+        OrderDetail orderDetail = OrderDetail.create(
+                orderCreateRequest.getProductId(),
+                orderCreateRequest.getOrderDetailQty(),
+                orderCreateRequest.getOrderDetailPrice()
+        );
+
+        order.addDetail(orderDetail);
         orderRepository.save(order);
 
         kafkaEventPublisher.publish(
                 Event.builder()
-                        .eventTopic(EventType.Topic.CLOUD_NATIVE_MSA_ORDER)
+                        .eventTopic(EventType.Topic.SPRING_BOOT_KAFKA_PATTERNS_ORDER_PRODUCT)
                         .eventType(EventType.ORDER_CREATED)
                         .payload(
                                 OrderCreatedEventPayload.builder()
                                         .productId(orderCreateRequest.getProductId())
-                                        .orderedQty(orderCreateRequest.getOrderQty())
+                                        .orderedQty(orderCreateRequest.getOrderDetailQty())
                                         .build()
                         )
                         .build()
         );
 
-        return OrderResponse.from(order);
+        /*
+        * created order
+        * */
+        return OrderCreateResponse.from(order, orderDetail);
     }
 
-    public List<OrderResponse> readOrderOfUser(Long userId) {
-        return orderRepository.findByUserId(userId).stream()
-                .map(OrderResponse::from)
-                .toList();
+    public OrderListResponse readOrderOfUser(Long userId) {
+        return OrderListResponse.from(
+                orderRepository.findByUserId(userId)
+        );
     }
 
-    public List<OrderResponse> readAllOrders() {
-        return orderRepository.findAll().stream()
-                .map(OrderResponse::from)//Entity > Dto
-                .toList();
+    public OrderListResponse readAllOrders() {
+        return OrderListResponse.from(
+                orderRepository.findAll()
+        );
     }
 
 }

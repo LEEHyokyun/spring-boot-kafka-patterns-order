@@ -1,5 +1,8 @@
 package com.msa.order.infra.kafka.event.eventpublisher;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.msa.order.infra.kafka.event.Event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,4 +36,15 @@ public class KafkaEventPublisher {
         }
 
     }
+//
+//    private String convertToJson(Event event){
+//        ObjectMapper mapper = new ObjectMapper();
+//
+//        try {
+//            String eventJson = mapper.writeValueAsString(event);
+//            return eventJson;
+//        }catch (JsonProcessingException e){
+//            throw new RuntimeException("[KafkaEventPublisher.convertToJson][ERROR] JSON PROCESSING ERROR");
+//        }
+//    }
 }

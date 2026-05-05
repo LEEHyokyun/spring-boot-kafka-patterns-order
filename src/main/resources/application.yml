@@ -17,6 +17,7 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092 # for producer
     producer: #직렬화 설정없으면 기본 String to String
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 server:
   port: 60010

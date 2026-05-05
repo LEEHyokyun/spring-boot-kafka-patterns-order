@@ -24,12 +24,15 @@ public class KafkaConfig {
     @Value("${spring.kafka.producer.value-serializer}")
     private String valueSerializer;
 
+    @Value("${spring.kafka.producer.key-serializer}")
+    private String keySerializer;
+
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplate() {
         Map<String, Object> configProps = new HashMap<>();
 
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializer);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, valueSerializer);
         configProps.put(ProducerConfig.ACKS_CONFIG, "all"); //leader + replica까지 메시지 발행 완료 시 성공
 

@@ -1,15 +1,11 @@
 package com.msa.order.controller;
 
 import com.msa.order.model.request.OrderCreateRequest;
-import com.msa.order.model.response.OrderResponse;
+import com.msa.order.model.response.OrderListResponse;
+import com.msa.order.model.response.OrderCreateResponse;
 import com.msa.order.service.OrderService;
-import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /*
 * model 효율화
@@ -18,7 +14,7 @@ import java.util.List;
 * - Response Object는 처리 시 활용한 객체 상태/값들을 보여주는 목적으로 분리하지 않고 일괄 운용
 * */
 @RestController
-@RequestMapping("/")
+@RequestMapping("/order")
 @RequiredArgsConstructor
 public class OrderController {
 
@@ -30,38 +26,32 @@ public class OrderController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<List<OrderResponse>> readAllOrders(){
+    public OrderListResponse readAllOrders(){
 
-        List<OrderResponse> list = orderService.readAllOrders();
-
-        return ResponseEntity.status(HttpStatus.OK).body(list);
+        return orderService.readAllOrders();
     }
 
-    @Observed(
-            name = "read.order.orders",
-            contextualName = "[READ OREDER OF ONE USER]",
-            lowCardinalityKeyValues = {
-                    "SERVICE", "ORDER1-SERVICE",
-                    "OPERATION", "READ"
-            }
-    )
+//    @Observed(
+//            name = "read.order.orders",
+//            contextualName = "[READ OREDER OF ONE USER]",
+//            lowCardinalityKeyValues = {
+//                    "SERVICE", "ORDER1-SERVICE",
+//                    "OPERATION", "READ"
+//            }
+//    )
     @GetMapping("/orders/{userId}")
-    public ResponseEntity<List<OrderResponse>> readOrderOfUser(@PathVariable("userId") Long userId){
+    public OrderListResponse readOrderOfUser(@PathVariable("userId") Long userId){
 
-        List<OrderResponse> list = orderService.readOrderOfUser(userId);
-
-        return ResponseEntity.status(HttpStatus.OK).body(list);
+        return orderService.readOrderOfUser(userId);
     }
 
     @PostMapping("/orders/{userId}")
-    public ResponseEntity<OrderResponse> create(
+    public OrderCreateResponse create(
             @PathVariable("userId") Long userId,
             @RequestBody OrderCreateRequest request
         ){
 
-        OrderResponse orderResponse = orderService.create(userId, request);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
+        return orderService.create(userId, request);
     }
 
 }
