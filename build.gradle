@@ -7,9 +7,9 @@ plugins {
 group = 'spring-boot-kafka-patterns-order'
 version = '1'
 
-ext{
-    springCloudVersion = "2025.0.1"
-}
+//ext{
+//    springCloudVersion = "2025.0.1"
+//}
 
 /*
 * MSA(Multi Module) Procject를 구성
@@ -38,6 +38,12 @@ allprojects {
     }
 
     dependencies {
+        /*
+        * outbox message relay module
+        * */
+        //implementation project('spring-boot-kafka-patterns-outbox-message-relay')
+        //implementation 'spring-boot-kafka-patterns-order:spring-boot-kafka-patterns-outbox-message-relay'
+
         /*
         * Spring Cloud
         * */

@@ -22,3 +22,5 @@ rootProject.name = 'spring-boot-kafka-patterns-order'
 //include 'service:like'
 //include 'service:hot-article'
 //include 'service:article-read'
+//include 'spring-boot-kafka-patterns-outbox-message-relay'
+//includeBuild('../spring-boot-kafka-patterns-outbox-message-relay')

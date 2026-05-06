@@ -20,13 +20,14 @@
 
 ## 2. WAS Configs
 
-| Spring Application                       | Host Port | 비고    |
-|------------------------------------------|-----------|-------|
-| spring-boot-kafka-patterns-order         | 60010     | Producer |
-| spring-boot-kafka-patterns-product       | 60011      | Consumer |
-| spring-boot-kakfa-patterns-kafka         | 9092      | Kafka |
-| spring-boot-kafka-patterns-mysql-order   | 3307      | Order DB |
-| spring-boot-kafka-patterns-mysql-product | 3308      | Product DB |
+| Spring Application                              | Host Port | 비고         |
+|-------------------------------------------------|-----------|------------|
+| spring-boot-kafka-patterns-order                | 60010     | Producer   |
+| spring-boot-kafka-patterns-product              | 60011     | Consumer   |
+| spring-boot-kakfa-patterns-kafka                | 9092      | Kafka      |
+| spring-boot-kafka-patterns-mysql-order          | 3307      | Order DB   |
+| spring-boot-kafka-patterns-mysql-product        | 3308      | Product DB |
+| spring-boot-kafka-patterns-outbox-message-relay | 60012     | outbox     |
 
 ## 3. Trouble Shootings
 

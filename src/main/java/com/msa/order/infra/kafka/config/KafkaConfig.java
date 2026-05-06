@@ -47,7 +47,7 @@ public class KafkaConfig {
         executor.setCorePoolSize(20);
         executor.setMaxPoolSize(50);
         executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("CLOUD-NATIVE-MSA-ORDER");
+        executor.setThreadNamePrefix("SPRING-BOOT-KAFKA-PATTERNS");
         return executor;
     }
 }
