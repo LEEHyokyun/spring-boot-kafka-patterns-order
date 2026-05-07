@@ -29,11 +29,40 @@
 | spring-boot-kafka-patterns-mysql-product        | 3308      | Product DB |
 | spring-boot-kafka-patterns-outbox-message-relay | 60012     | outbox     |
 
-## 3. Trouble Shootings
+## 3. Thread Configs
+
+| 대분류              | 세부 설정                           | 현재 값 / 코드                                               | 역할              | 특징 / 목적                        |
+| ---------------- | ------------------------------- | ------------------------------------------------------- | --------------- | ------------------------------ |
+| Kafka Producer   | `BOOTSTRAP_SERVERS_CONFIG`      | `${spring.kafka.bootstrap-servers}`                     | Kafka Broker 주소 | Producer가 연결할 Kafka Cluster 지정 |
+| Kafka Producer   | `KEY_SERIALIZER_CLASS_CONFIG`   | `${spring.kafka.producer.key-serializer}`               | Key 직렬화         | Kafka 전송용 Key → Byte 변환        |
+| Kafka Producer   | `VALUE_SERIALIZER_CLASS_CONFIG` | `${spring.kafka.producer.value-serializer}`             | Value 직렬화       | Event Payload → Byte 변환        |
+| Kafka Producer   | `ACKS_CONFIG`                   | `"all"`                                                 | 메시지 내구성 보장      | Leader + Replica 모두 기록 후 성공 응답 |
+| Kafka Producer   | `KafkaTemplate<String,Object>`  | `outboxMessageRelayKafkaTemplate()`                     | Kafka 메시지 발행    | Spring Kafka Producer 추상화      |
+
+| 대분류              | 세부 설정                           | 현재 값 / 코드                                               | 역할              | 특징 / 목적                        |
+| ---------------- | ------------------------------- | ------------------------------------------------------- | --------------- | ------------------------------ |
+| Commit 이후 비동기 처리 | `ThreadPoolTaskExecutor`        | `messageRelayPublishingAfterTxExecutor()`               | 비동기 스레드 풀       | 트랜잭션 완료 후 메시지 발행               |
+| Commit 이후 비동기 처리 | `corePoolSize`                  | `20`                                                    | 기본 유지 스레드 수     | 동시에 여러 이벤트 처리 가능               |
+| Commit 이후 비동기 처리 | `maxPoolSize`                   | `50`                                                    | 최대 스레드 수        | 순간 트래픽 증가 대응                   |
+| Commit 이후 비동기 처리 | `queueCapacity`                 | `100`                                                   | 작업 대기 큐 크기      | 스레드 부족 시 임시 적재                 |
+| Commit 이후 비동기 처리 | `threadNamePrefix`              | `SPRING-BOOT-KAFKA-PATTERNS-OUTBOX-MESSAGE-RELAY`       | 스레드 이름 prefix   | 로그 추적 용이                       |
+| Commit 이후 비동기 처리 | 실행 방식                           | 병렬 처리                                                   | 다중 이벤트 동시 발행    | Throughput 향상                  |
+
+
+| 대분류              | 세부 설정                           | 현재 값 / 코드                                               | 역할              | 특징 / 목적                        |
+| ---------------- | ------------------------------- | ------------------------------------------------------- | --------------- | ------------------------------ |
+| Polling 기반 재전송   | `ThreadPoolTaskScheduler`       | `messageRelayPublishingWithPeriodicalPollingExecutor()` | Polling 스레드 풀   | 미전송 Outbox 재처리                 |
+| Polling 기반 재전송   | `poolSize`                      | `1`                                                     | 단일 스레드          | 순차 Polling 보장                  |
+| Polling 기반 재전송   | `threadNamePrefix`              | `messageRelayPublishingWithPeriodicalPollingExecutor-`  | 스레드 이름 prefix   | Polling 로그 추적                  |
+| Polling 기반 재전송   | 실행 방식                           | Single Thread                                           | 순차 처리           | 중복 Polling 방지                  |
+| Polling 기반 재전송   | 목적                              | 장애 복구                                                   | Kafka 발행 실패 보완  | Eventually Consistent 보장       |
+
+
+## 4. Trouble Shootings
 
 > Kafka의 메시지 유실 상황에 대한 대응 방안
 
-## 3-1. Consumer의 메시지 처리 실패(임시오류에 대한 대응책)
+## 4-1. Consumer의 메시지 처리 실패(임시오류에 대한 대응책)
 
 ``
 2026-05-05T19:32:49.713+09:00 ERROR 9584 --- [spring-boot-kafka-patterns-product] [ntainer#0-0-C-1] o.s.kafka.listener.DefaultErrorHandler   : Backoff FixedBackOff{interval=0, currentAttempts=10, maxAttempts=9} exhausted for ORDER.CREATED-0@4
@@ -59,10 +88,11 @@
 
 dlt 토픽에 메시지가 쌓이면, 메시지를 처리하기 위해 처리 가능(Listener)
 
-## 3-2. Kafka Broker로의 메시지 발행 실패(Kafka 통신 오류 등 치명적 오류에 대한 대응책)
+## 4-2. Kafka Broker로의 메시지 발행 실패(Kafka 통신 오류 등 치명적 오류에 대한 대응책)
 
 > outbox pattern
 - consumer 측의 메시지 처리와는 상관없이 producer의 연산, 메시지 발행 오류 상태에 대한 문제
+- 데이터 정합성을 저해할 수 있기에 이에 대한 대응책 필요
 - 데이터 정합성을 저해할 수 있기에 이에 대한 대응책 필요
 
 ![img_8.png](img_8.png)
@@ -70,7 +100,7 @@ dlt 토픽에 메시지가 쌓이면, 메시지를 처리하기 위해 처리 �
 - 트랜잭션 레벨에서, 처리 후 바로 메시지 전송이 아닌 outbox에 보관
 - 이후 outbox에서 페이로드를 읽고 메시지를 전송, 메시지 유실 방지 및 데이터 정합성을 확보하는 것이 핵심
 
-## 4. Additional KeyPoints
+## 5. Additional KeyPoints
 
 - JPA : Entity Graph
 
